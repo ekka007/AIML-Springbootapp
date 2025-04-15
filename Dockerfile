@@ -1,14 +1,12 @@
-# Use a slim Java runtime as the base image.
-FROM openjdk:17-jdk-alpine
+# Start from a base image with Java runtime
+FROM openjdk:17-jdk-slim
 
-# Set the working directory inside the container.
-WORKDIR /app
+# Copy the JAR file from the target directory to the container
+COPY target/*.jar /app.jar
 
-# Copy the JAR file from the current directory to the container.
-COPY app.jar /app/app.jar
-
-# Expose the port that your Spring Boot app is set to use (commonly 8080).
+# Expose the port the application runs on
 EXPOSE 8080
 
-# Run the application.
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run the application
+ENTRYPOINT ["java", "-jar", "/app.jar"]
+
