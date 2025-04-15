@@ -71,16 +71,22 @@ jobs:
             org.opencontainers.image.description="Spring Boot Application"
           tags: |
             v${{ steps.get-version.outputs.version }}
+      
+      - name: List Build Artifacts
+      
+        run: docker build -t springbootimagev1 .
 
-      - name: Docker Build Scan And Push
-        uses: docker/build-push-action@v5
-        with:
+
+
+      # - name: Docker Build Scan And Push
+      #   uses: docker/build-push-action@v5
+      #   with:
           
-          docker-tags: |
-            trialktyenb.jfrog.io/Springbootapp/epl-example-java-maven-app:${{ steps.get-version.outputs.version }}
-          jfrog-repository: usa2-build-info/
-          jfrog-project-key: usa2
-          jfrog-url: https://trialktyenb.jfrog.io/
-          docker-push: true
+      #     docker-tags: |
+      #       trialktyenb.jfrog.io/Springbootapp/epl-example-java-maven-app:${{ steps.get-version.outputs.version }}
+      #     jfrog-repository: usa2-build-info/
+      #     jfrog-project-key: usa2
+      #     jfrog-url: https://trialktyenb.jfrog.io/
+      #     docker-push: true
 
       
