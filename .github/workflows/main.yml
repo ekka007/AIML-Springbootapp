@@ -37,14 +37,7 @@ jobs:
 
      # New step to list the build artifacts in the target folder so you can see what was built
       - name: List Build Artifacts
-        run: ls -alh target/    
-
-      - name: Login to JFrog Artifactory
-        uses: docker/login-action@v2
-        with:
-          registry: trialktyenb.jfrog.io
-          username: ${{ secrets.JFROG_USERNAME }}
-          password: ${{ secrets.JFROG_TOKEN }}
+        run: ls -alh target/     
 
       - name: Docker Metadata
         id: docker-meta
@@ -72,21 +65,25 @@ jobs:
           tags: |
             v${{ steps.get-version.outputs.version }}
       
-      - name: List Build Artifacts
+      # - name: List Build Artifacts
+      #   run: docker build -t springbootimagev1 .
+
+      - name: Login to JFrog Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: trialktyenb.jfrog.io
+          username: ${{ secrets.JFROG_USERNAME }}
+          password: ${{ secrets.JFROG_PASSWORD }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: trialktyenb.jfrog.io/Springbootapp/epl-example-java-maven-app:${{ steps.get-version.outputs.version }}
+
       
-        run: docker build -t springbootimagev1 .
 
 
-
-      # - name: Docker Build Scan And Push
-      #   uses: docker/build-push-action@v5
-      #   with:
-          
-      #     docker-tags: |
-      #       trialktyenb.jfrog.io/Springbootapp/epl-example-java-maven-app:${{ steps.get-version.outputs.version }}
-      #     jfrog-repository: usa2-build-info/
-      #     jfrog-project-key: usa2
-      #     jfrog-url: https://trialktyenb.jfrog.io/
-      #     docker-push: true
 
       
