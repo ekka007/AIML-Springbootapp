@@ -1,17 +1,15 @@
-# # Use a lightweight OpenJDK base image
-# FROM openjdk:8-jdk-slim
-
-# # Copy the Spring Boot JAR file into the container
-# COPY target/*.jar app.jar
-
-# # Expose the default Spring Boot port
-# EXPOSE 8080
-
-# # Run the JAR file
-# ENTRYPOINT ["java", "-jar", "/app.jar"]
-
-
+# Use a lightweight OpenJDK base image matching your build JDK version
 FROM openjdk:17-jdk-slim
-COPY target/app.jar /app.jar
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the Spring Boot JAR file into the container
+COPY target/app.jar app.jar
+
+# Expose the default Spring Boot port
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+
+# Run the JAR file
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
