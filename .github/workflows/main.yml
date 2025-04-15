@@ -27,11 +27,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Get Maven Build Version
-        id: get-version
-        run: |
-          echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout | tail -1)" >> $GITHUB_OUTPUT
-
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
@@ -75,12 +70,30 @@ jobs:
           username: ${{ secrets.JFROG_USERNAME }}
           password: ${{ secrets.JFROG_TOKEN }}
 
+      - name: Get Maven Build Version
+        id: get-version
+        run: |
+          echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout | tail -1)" >> $GITHUB_OUTPUT
+
+      - name: Debug Version Output
+        run: echo "Version is ${{ steps.get-version.outputs.version }}"
+      
+      - name: Fail if version is empty
+        run: |
+          if [ -z "${{ steps.get-version.outputs.version }}" ]; then
+            echo "Version is empty!"
+            exit 1
+          fi
+      
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: trialktyenb.jfrog.io/Springbootapp/epl-example-java-maven-app:${{ steps.get-version.outputs.version }}
+                
+      
+            
 
       
 
