@@ -75,7 +75,7 @@ jobs:
       - name: Docker Build Scan And Push
         uses: docker/build-push-action@v5
         with:
-          ask-id: ASK-1234
+          
           docker-tags: |
             trialktyenb.jfrog.io/Springbootapp/epl-example-java-maven-app:${{ steps.get-version.outputs.version }}
           jfrog-repository: usa2-build-info/
