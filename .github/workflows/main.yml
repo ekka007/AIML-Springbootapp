@@ -73,7 +73,7 @@ jobs:
         with:
           registry: trialktyenb.jfrog.io
           username: ${{ secrets.JFROG_USERNAME }}
-          password: ${{ secrets.JFROG_PASSWORD }}
+          password: ${{ secrets.JFROG_TOKEN }}
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
