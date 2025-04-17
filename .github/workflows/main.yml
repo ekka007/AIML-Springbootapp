@@ -69,28 +69,20 @@ jobs:
           registry: trialktyenb.jfrog.io
           username: ${{ secrets.JFROG_USERNAME }}
           password: ${{ secrets.JFROG_TOKEN }}
-
-      - name: Get Maven Build Version
-        id: get-version
-        run: |
-          echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout | tail -1)" >> $GITHUB_OUTPUT
-
-      - name: Debug Version Output
-        run: echo "Version is ${{ steps.get-version.outputs.version }}"
-      
-      - name: Fail if version is empty
-        run: |
-          if [ -z "${{ steps.get-version.outputs.version }}" ]; then
-            echo "Version is empty!"
-            exit 1
-          fi
-      
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
+          
+    # 2. Log in to Azure Container Registry
+      - uses: azure/docker-login@v1             # :contentReference[oaicite:1]{index=1}
         with:
-          context: .
-          push: true
-          tags: trialktyenb.jfrog.io/Springbootapp/epl-example-java-maven-app:${{ steps.get-version.outputs.version }}
+          login-server: cr50463354.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+          
+     # 3. Build and push the Docker image
+      - name: Build and Push image
+        run: |
+          docker build . -t cr50463354.azurecr.io/springapp:${{ github.sha }}
+          docker push cr50463354.azurecr.io/springapp:${{ github.sha }} 
+  
                 
       
             
