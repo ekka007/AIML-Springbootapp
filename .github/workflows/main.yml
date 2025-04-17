@@ -77,11 +77,11 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
           
-     # 3. Build and push the Docker image
-      - name: Build and Push image
-        run: |
-          docker build . -t cr50463354.azurecr.io/springapp:${{ github.sha }}
-          docker push cr50463354.azurecr.io/springapp:${{ github.sha }} 
+     # # 3. Build and push the Docker image
+     #  - name: Build and Push image
+     #    run: |
+     #      docker build . -t cr50463354.azurecr.io/springapp:${{ github.sha }}
+     #      docker push cr50463354.azurecr.io/springapp:${{ github.sha }} 
   
                 
       
