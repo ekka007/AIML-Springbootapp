@@ -5,21 +5,26 @@ on:
     branches:
       - dev
 
+# Workflow permissions
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set Up JDK 17
+      - name: Set up JDK 17
         uses: actions/setup-java@v2
         with:
           java-version: '17'
-          distribution: 'temurin'
+          distribution: temurin
 
-      - name: Cache Maven Dependencies
+      - name: Cache Maven packages
         uses: actions/cache@v3
         with:
           path: ~/.m2/repository
@@ -30,16 +35,20 @@ jobs:
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
-     # New step to list the build artifacts in the target folder so you can see what was built
-      - name: List Build Artifacts
-        run: ls -alh target/     
+      - name: List build artifacts
+        run: ls -alh target/
 
-      - name: Docker Metadata
+      - name: Get version from pom.xml
+        id: get-version
+        run: |
+          echo "Project version is: $(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+          echo "::set-output name=version::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+
+      - name: Docker metadata
         id: docker-meta
         uses: docker/metadata-action@v5
         with:
-          # Specify the complete image repository.
-          images: "trialktyenb.jfrog.io/Springbootapp/epl-example-java-maven-app"
+          images: trialktyenb.jfrog.io/Springbootapp/epl-example-java-maven-app
           labels: |
             com.uhg.image.askid=ASK-1234
             com.uhg.image.branch=${{ github.ref }}
@@ -55,41 +64,28 @@ jobs:
             org.opencontainers.image.authors=${{ github.event.head_commit.author.name }}
             org.opencontainers.image.url=${{ github.event.head_commit.url }}
             org.opencontainers.image.documentation=${{ github.event.head_commit.url }}
-            org.opencontainers.image.vendor="UnitedHealth Group"
-            org.opencontainers.image.description="Spring Boot Application"
+            org.opencontainers.image.vendor=UnitedHealth Group
+            org.opencontainers.image.description=Spring Boot Application
           tags: |
             v${{ steps.get-version.outputs.version }}
-      
-      # - name: List Build Artifacts
-      #   run: docker build -t springbootimagev1 .
 
-      - name: Login to JFrog Docker Registry
-        uses: docker/login-action@v3
+      - name: Login to Azure
+        uses: azure/login@v2
         with:
-          registry: trialktyenb.jfrog.io
-          username: ${{ secrets.JFROG_USERNAME }}
-          password: ${{ secrets.JFROG_TOKEN }}
-          
-    # 2. Log in to Azure Container Registry
-      - name: Log in to Azure Container Registry
-        uses: azure/docker-login@v1             # :contentReference[oaicite:1]{index=1}
-        with:
-          login-server: cr50463354.azurecr.io
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
-          
-     # # 3. Build and push the Docker image
-     #  - name: Build and Push image
-     #    run: |
-     #      docker build . -t cr50463354.azurecr.io/springapp:${{ github.sha }}
-     #      docker push cr50463354.azurecr.io/springapp:${{ github.sha }} 
-  
-                
-      
-            
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          auth-type: service_principal
 
-      
+      - name: Docker build & push to ACR
+        run: |
+          # Log in to your Azure Container Registry
+          az acr login --name acrspringbootdev
 
+          # Build the Docker image, tagging with the Maven version
+          docker build \
+            -t acrspringbootdev.azurecr.io/springbootapp:${{ steps.get-version.outputs.version }} \
+            .
 
-
-      
+          # Push the image
+          docker push acrspringbootdev.azurecr.io/springbootapp:${{ steps.get-version.outputs.version }}
