@@ -78,15 +78,36 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           auth-type: service_principal
 
+
       - name: Docker build & push to ACR
         run: |
           # Log in to your Azure Container Registry
           az acr login --name acrspringbootdev
 
-          # Build the Docker image, tagging with the Maven version
-          docker build \
-            -t acrspringbootdev.azurecr.io/springbootapp:${{ steps.get-version.outputs.version }} \
-            .
+          # Grab the Maven version (fallback to 'latest' if empty)
+          VERSION="${{ steps.get-version.outputs.version }}"
+          if [ -z "$VERSION" ]; then
+            echo "⚠️ No version found; defaulting to 'latest'"
+            VERSION=latest
+          fi
 
-          # Push the image
-          docker push acrspringbootdev.azurecr.io/springbootapp:${{ steps.get-version.outputs.version }}
+          # Build & push using a single IMAGE variable
+          IMAGE="acrspringbootdev.azurecr.io/springbootapp:${VERSION}"
+          echo "Building and pushing image: $IMAGE"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+
+
+
+      # - name: Docker build & push to ACR
+      #   run: |
+      #     # Log in to your Azure Container Registry
+      #     az acr login --name acrspringbootdev
+
+      #     # Build the Docker image, tagging with the Maven version
+      #     docker build \
+      #       -t acrspringbootdev.azurecr.io/springbootapp:${{ steps.get-version.outputs.version }} \
+      #       .
+
+      #     # Push the image
+      #     docker push acrspringbootdev.azurecr.io/springbootapp:${{ steps.get-version.outputs.version }}
